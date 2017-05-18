@@ -6,6 +6,7 @@ import sys
 import os
 import math
 import copy
+import subprocess
 
 def delete_vlans_from_juniper(conf_str):
 
@@ -52,6 +53,7 @@ def delete_vlans_from_juniper(conf_str):
 
 
     return conf_str
+
 def create_conffile_for_juniper(vlan_if, trunks_if,handled_ports_count):
     print '\nCreate new configuration file...'
 
@@ -200,6 +202,19 @@ def offline_mode(config):
 
     print 'Done.'
 
+def start_virtual_switches(patch_port_num,trunk_port_num):
+    print "Create and start virtual switches"
+    subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True)
+
+    #cmd = "xterm -hold -e /home/szalay/harmless/virtual_switch_starter.sh 2 2"
+    # no block, it start a sub process.
+    #p = subprocess.Popen(cmd , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # and you can block util the cmd execute finish
+    #p.wait()
+
+    #TODO: Create a picture about the connections (wiring)
+
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
@@ -208,7 +223,12 @@ if __name__ == '__main__':
         sys.exit(1)
 
     else:
+
         config = ConfigParser.ConfigParser()
         config.read("configuration_file.ini")
+        patch_port_num = len(config.get('Hardware device', 'Used_ports_for_vlan').split(','))
+        trunk_port_num = len(config.get('Hardware device', 'Used_ports_for_trunk').split(','))
         #config_file = sys.argv[1]
         offline_mode(config)
+        start_virtual_switches(patch_port_num, trunk_port_num)
+        print "DONE"
