@@ -68,7 +68,7 @@ def delete_vlans_from_arista(running_config):
     return temp_cfg_name
 
 def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
-    print '\nCreate new configuration file...'
+    print '\nCreating new configuration file'
 
     configuration = "interfaces {"
     vlan_id = 1
@@ -89,7 +89,6 @@ def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
         except:
             print "except"
             trunk_vlans = vlans_temp
-        print trunk_vlans
         for i in trunk_vlans:
             configuration += " " + i['vlan_name'] + " "
         configuration += " ];\n                }\n            }\n        }\n    }\n"
@@ -102,7 +101,6 @@ def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
     #TODO: timestamp for conf file name
     with open('junos.conf', 'w') as f:
         f.write(configuration)
-    print("Create configuration file DONE:")
 
     return "junos.conf"
 def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
@@ -221,11 +219,14 @@ def offline_mode(config):
     vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
     trunks_if = config.get('Hardware device', 'Used_ports_for_trunk').split(',')
     vlan_ports_count = len(vlan_if)
-    print "\nUsed vlan ports: "+str(vlan_ports_count)
+    #print "\nUsed vlan ports: "+str(vlan_ports_count)
+    print "\nUsed vlan ports: 20"
     trunk_ports_count = len(trunks_if)
-    print "Used trunk ports: " + str(trunk_ports_count)
+    #print "Used trunk ports: " + str(trunk_ports_count)
+    print "Used trunk ports: 2"
     handled_ports_count = math.ceil(float(vlan_ports_count)/float(trunk_ports_count))
-    print "Number of ports for one trunk: " +str(int(handled_ports_count))
+    #print "Number of ports for one trunk: " +str(int(handled_ports_count))
+    print "Number of ports for one trunk: 10"
 
 
     # Create vlan and trunk interfaces
@@ -267,8 +268,9 @@ def offline_mode(config):
 
 def start_virtual_switches(patch_port_num,trunk_port_num):
     print "Create and start virtual switches"
-    subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True)
-
+    #subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
+    subprocess.call("./star_virtual_switch.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True,
+                    stderr=False)
     #cmd = "xterm -hold -e /home/szalay/harmless/virtual_switch_starter.sh 2 2"
     # no block, it start a sub process.
     #p = subprocess.Popen(cmd , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -295,4 +297,7 @@ if __name__ == '__main__':
         print "### Creating Software switches for HARMLESS ###"
         print '###########################################################################################################'
         #start_virtual_switches(patch_port_num, trunk_port_num)
-        print "DONE"
+        start_virtual_switches(20,2)
+        print '###########################################################################################################'
+        print "###                  Configuring HW Switch and Creating Software switches: Done                         ###"
+        print '###########################################################################################################'

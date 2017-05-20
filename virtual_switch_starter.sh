@@ -20,10 +20,11 @@ config_file="configuration_file.ini"
 num_cores=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Host_IP | cut -f2 -d'"'`
 trunk_ports=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Interfaces_for_trunk | cut -f2 -d'"'`
 listening_port=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Contoller_listener_port | cut -f2 -d'"'`
+listening_ip=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Contoller_listener_ip | cut -f2 -d'"'`
 is_active=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Active_OF_controller | cut -f2 -d'"'`
-is_active=`echo "$a" | awk '{print tolower($is_active)}'`
+#TODO: create tolower
 is_dpdk=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep DPDK | cut -f2 -d'"'`
-is_dpdk=`echo "$a" | awk '{print tolower($is_dpdk)}'`
+#TODO: create tolower
 
 patch_ports_count=$1
 trunk_ports_count=$2
@@ -108,7 +109,7 @@ do
     #TODO: start ovs without DPDK
     if [ "$is_dpdk" == "true" ]
     then
-        cmd="sudo ovs-vsctl add-port $DBR $trunk -- set Interface dpdk${i} type=dpdk"
+        cmd="sudo ovs-vsctl add-port $DBR $trunk -- set Interface $trunk type=dpdk"
         $cmd
     else
         #TODO: Read trunk ports from configFile
@@ -123,7 +124,7 @@ then
   sudo ovs-vsctl set-controller $DBR2 ptcp:$listening_port
 else
   echo "Add active controller listener port on ${listening_port}"
-  sudo ovs-vsctl set-controller $DBR2 ptcp:$listening_port
+  sudo ovs-vsctl set-controller $DBR2 tcp:$listening_ip:$listening_port
 fi
 
 
@@ -142,7 +143,6 @@ do
   add_port="sudo ovs-ofctl add-flow ${DBR} dl_vlan=${vlan},actions=strip_vlan,output:${pp}"
   $add_port
   #backDirection=$(expr $output + $patch_ports_count)
-  echo "expr $patch_ports_count % $for_one_trunk"
   next_if=`expr $patch_ports_count % $for_one_trunk`
   add_port2="sudo ovs-ofctl add-flow ${DBR} in_port=${pp},actions=mod_vlan_vid:${vlan},output:${phy_if_out}"
   if [ "$next_if" == 0 ]
@@ -156,5 +156,5 @@ echo "Pin OVS to the right cores (cm: ${c}) and set up RSS (${r}"
 sudo ovs-vsctl set Open_vSwitch . other_config:pmd-cpu-mask=$c
 sudo ovs-vsctl set Open_vSwitch . other_config:n-dpdk-rxqs=$r
 
-echo -e "\t\t\t[DONE]...hopefully :)"
+echo -e "\t\t\t Creating Virtual switches: done :)"
 
