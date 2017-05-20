@@ -50,11 +50,24 @@ def delete_vlans_from_juniper(conf_str):
         starting_str = conf_str[0:start_index]
         ending_str = conf_str[start_index+16:]
         conf_str = starting_str + ending_str
-
-
     return conf_str
+def delete_vlans_from_arista(running_config):
 
-def create_conffile_for_juniper(vlan_if, trunks_if,handled_ports_count):
+    new_lines = []
+    lines = open(running_config).readlines()
+
+    for line in lines:
+        if ("vlan" not in line) and ("trunk" not in line):
+            if line.find("Vlan") == -1:
+                new_lines.append(line)
+
+    new_lines = new_lines[4:]
+    temp_cfg_name = 'arista_without_vlan.conf'
+    open(temp_cfg_name, 'w').writelines(new_lines)
+
+    return temp_cfg_name
+
+def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
     print '\nCreate new configuration file...'
 
     configuration = "interfaces {"
@@ -89,8 +102,34 @@ def create_conffile_for_juniper(vlan_if, trunks_if,handled_ports_count):
     #TODO: timestamp for conf file name
     with open('junos.conf', 'w') as f:
         f.write(configuration)
-
     print("Create configuration file DONE:")
+
+    return "junos.conf"
+def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
+
+    print '\nCreate new configuration file...'
+    config_str = ""
+
+    vlan_id = 101
+    config_str += "!\nvlan " + str(vlan_id) + "-" + str(vlan_id+len(vlans_if)-1) + "\n!\n"
+    for i in vlans_if:
+        config_str += "interface " + str(i) + "\n"
+        config_str += "    switchport access vlan " + str(vlan_id) + "\n!\n"
+        vlan_id += 1
+
+    vlan = 101
+    for trunk in trunks_if:
+        config_str += "interface " + str(trunk) + "\n"
+        config_str += "    switchport trunk allowed vlan " + str(vlan) + "-" + str(int(vlan+handled_ports_count-1)) + "\n"
+        config_str += "    switchport mode trunk"  + "\n!\n"
+        vlan += handled_ports_count
+
+    # TODO: timestamp for conf file name
+    conf_name = "arista.conf"
+    with open(conf_name, 'w') as f:
+        f.write(config_str)
+
+    return conf_name
 
 def online_mode():
     """Load a config for the hardware device."""
@@ -127,14 +166,30 @@ def online_mode():
 
 def offline_mode(config):
     """Load a config for the hardware device."""
+    print '################################################'
+    print "### Configuring Hardware device for HARMLESS ###"
+    print '###########################################################################################################'
+
     # Driver:
-    driver = napalm.get_network_driver(config.get('Hardware device', 'Driver'))
+    driver_name = config.get('Hardware device', 'Driver')
+    driver = napalm.get_network_driver(driver_name)
 
     # Connection:
-    device = driver(hostname=config.get('Hardware device', 'Host_IP'), username=config.get('Hardware device', 'Username'),
-                    password=config.get('Hardware device', 'Password'), optional_args={'port': config.get('Hardware device', 'Port')})
+
+    # Connect:
+
+    if(config.get('Hardware device', 'Port') is not ""):
+
+        device = driver(hostname=config.get('Hardware device', 'Host_IP'), username=config.get('Hardware device', 'Username'),
+                        password=config.get('Hardware device', 'Password'), optional_args={'port': config.get('Hardware device', 'Port')})
+    else:
+        device = driver(hostname=config.get('Hardware device', 'Host_IP'),
+                        username=config.get('Hardware device', 'Username'),
+                        password=config.get('Hardware device', 'Password'))
+
     print 'Connecting to the Hardware Device...'
     device.open()
+
 
     # Deleting vlans
     #TODO:rename running.conf
@@ -143,42 +198,49 @@ def offline_mode(config):
     with open('running.conf', 'w') as f:
         f.write(device_config['running'])
 
-    tmp_vlans_cfg = delete_vlans_from_juniper(device_config['running'])
+    # TODO: create for more driver
+    if driver_name == "junos":
+        tmp_vlans_cfg = delete_vlans_from_juniper(device_config['running'])
+        with open('tmp_config.conf', 'w') as f:
+            f.write(tmp_vlans_cfg)
+        lines = open('tmp_config.conf').readlines()
+        temp_cfg_name = 'junos_without_vlan.conf'
+        open(temp_cfg_name, 'w').writelines(lines[3:])
+        os.remove('tmp_config.conf')
 
-    with open('tmp_config.conf', 'w') as f:
-        f.write(tmp_vlans_cfg)
-    lines = open('tmp_config.conf').readlines()
-    open('junos_without_vlan.conf', 'w').writelines(lines[3:])
-    os.remove('tmp_config.conf')
+    elif driver_name == "eos":
+        temp_cfg_name = delete_vlans_from_arista("running.conf")
 
-    print "Upload new configuration..."
-    device.load_replace_candidate(filename='junos_without_vlan.conf')
+
+    print "Remove already existing vlans..."
+    device.load_replace_candidate(filename=temp_cfg_name)
     device.commit_config()
-    os.remove('junos_without_vlan.conf')
+    os.remove(temp_cfg_name)
 
     #Information about vlan and trunk ports
     vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
     trunks_if = config.get('Hardware device', 'Used_ports_for_trunk').split(',')
     vlan_ports_count = len(vlan_if)
-    print "vlan ports: "+str(vlan_ports_count)
+    print "\nUsed vlan ports: "+str(vlan_ports_count)
     trunk_ports_count = len(trunks_if)
-    print "trunk ports: " + str(trunk_ports_count)
-    #handled_ports_count = float(vlan_ports_count)/float(trunk_ports_count)
-    #print "handled ports: " + str(handled_ports_count)
+    print "Used trunk ports: " + str(trunk_ports_count)
     handled_ports_count = math.ceil(float(vlan_ports_count)/float(trunk_ports_count))
-    print "handled ports: " +str(handled_ports_count)
+    print "Number of ports for one trunk: " +str(int(handled_ports_count))
 
 
     # Create vlan and trunk interfaces
-    create_conffile_for_juniper(vlan_if, trunks_if, handled_ports_count)
-
-    device.load_merge_candidate(filename='junos.conf')
+    #TODO: create for more driver
+    if driver_name == "junos":
+        file_name = create_cfgfile_for_juniper(vlan_if, trunks_if, handled_ports_count)
+    elif driver_name == "eos":
+        file_name = create_cfgfile_for_arista(vlan_if, trunks_if, handled_ports_count)
+    print "Trying to commit..."
+    device.load_merge_candidate(filename=file_name)
     device.commit_config()
-    os.remove("junos.conf")
+    print "Commit was successfull :)"
+    os.remove(file_name)
     # close the session with the device.
     device.close()
-
-    # Remove the tmp files
 
 
     """
@@ -200,7 +262,8 @@ def offline_mode(config):
 
     #-----------------------------------------------------------------------------------------
 
-    print 'Done.'
+    print 'Configuring Hardware Device was successfull!'
+    print '-----------------------------------------------------------------------------------'
 
 def start_virtual_switches(patch_port_num,trunk_port_num):
     print "Create and start virtual switches"
@@ -219,16 +282,17 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         print "Start online mode"
-
         sys.exit(1)
 
     else:
-
         config = ConfigParser.ConfigParser()
         config.read("configuration_file.ini")
         patch_port_num = len(config.get('Hardware device', 'Used_ports_for_vlan').split(','))
         trunk_port_num = len(config.get('Hardware device', 'Used_ports_for_trunk').split(','))
         #config_file = sys.argv[1]
         offline_mode(config)
-        start_virtual_switches(patch_port_num, trunk_port_num)
+        print '###############################################'
+        print "### Creating Software switches for HARMLESS ###"
+        print '###########################################################################################################'
+        #start_virtual_switches(patch_port_num, trunk_port_num)
         print "DONE"
