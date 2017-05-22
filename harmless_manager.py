@@ -172,10 +172,7 @@ def offline_mode(config):
     driver_name = config.get('Hardware device', 'Driver')
     driver = napalm.get_network_driver(driver_name)
 
-    # Connection:
-
     # Connect:
-
     if(config.get('Hardware device', 'Port') is not ""):
 
         device = driver(hostname=config.get('Hardware device', 'Host_IP'), username=config.get('Hardware device', 'Username'),
@@ -219,14 +216,11 @@ def offline_mode(config):
     vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
     trunks_if = config.get('Hardware device', 'Used_ports_for_trunk').split(',')
     vlan_ports_count = len(vlan_if)
-    #print "\nUsed vlan ports: "+str(vlan_ports_count)
-    print "\nUsed vlan ports: 20"
+    print "\nUsed vlan ports: "+str(vlan_ports_count)
     trunk_ports_count = len(trunks_if)
-    #print "Used trunk ports: " + str(trunk_ports_count)
-    print "Used trunk ports: 2"
+    print "Used trunk ports: " + str(trunk_ports_count)
     handled_ports_count = math.ceil(float(vlan_ports_count)/float(trunk_ports_count))
-    #print "Number of ports for one trunk: " +str(int(handled_ports_count))
-    print "Number of ports for one trunk: 10"
+    print "Number of ports for one trunk: " +str(int(handled_ports_count))
 
 
     # Create vlan and trunk interfaces
@@ -268,14 +262,8 @@ def offline_mode(config):
 
 def start_virtual_switches(patch_port_num,trunk_port_num):
     print "Create and start virtual switches"
-    #subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
-    subprocess.call("./star_virtual_switch.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True,
-                    stderr=False)
-    #cmd = "xterm -hold -e /home/szalay/harmless/virtual_switch_starter.sh 2 2"
-    # no block, it start a sub process.
-    #p = subprocess.Popen(cmd , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # and you can block util the cmd execute finish
-    #p.wait()
+    subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
+    #subprocess.call("./star_virtual_switch.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True)
 
     #TODO: Create a picture about the connections (wiring)
 
@@ -296,8 +284,7 @@ if __name__ == '__main__':
         print '###############################################'
         print "### Creating Software switches for HARMLESS ###"
         print '###########################################################################################################'
-        #start_virtual_switches(patch_port_num, trunk_port_num)
-        start_virtual_switches(20,2)
+        start_virtual_switches(patch_port_num, trunk_port_num)
         print '###########################################################################################################'
         print "###                  Configuring HW Switch and Creating Software switches: Done                         ###"
         print '###########################################################################################################'
