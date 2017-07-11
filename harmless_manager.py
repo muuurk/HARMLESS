@@ -2,11 +2,12 @@
 
 import ConfigParser
 import napalm
-import sys
+import sys, getopt
 import os
 import math
 import copy
 import subprocess
+import time
 
 def delete_vlans_from_juniper(conf_str):
 
@@ -50,7 +51,15 @@ def delete_vlans_from_juniper(conf_str):
         starting_str = conf_str[0:start_index]
         ending_str = conf_str[start_index+16:]
         conf_str = starting_str + ending_str
-    return conf_str
+
+    with open('tmp_config.conf', 'w') as f:
+        f.write(conf_str)
+    lines = open('tmp_config.conf').readlines()
+    temp_cfg_name = 'junos_without_vlan.conf'
+    open(temp_cfg_name, 'w').writelines(lines[3:])
+    os.remove('tmp_config.conf')
+
+    return "junos_without_vlan.conf"
 def delete_vlans_from_arista(running_config):
 
     new_lines = []
@@ -68,7 +77,6 @@ def delete_vlans_from_arista(running_config):
     return temp_cfg_name
 
 def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
-    print '\nCreating new configuration file'
 
     configuration = "interfaces {"
     vlan_id = 1
@@ -98,11 +106,10 @@ def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
             'vlan_id'] + ";\n        interface {\n            " + vlan['interface'] + ".0;\n        }\n    }"
     configuration += "\n}"
 
-    #TODO: timestamp for conf file name
-    with open('junos.conf', 'w') as f:
+    with open("junos_with_vlan.cfg", 'w') as f:
         f.write(configuration)
 
-    return "junos.conf"
+    return "junos_with_vlan.cfg"
 def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
 
     print '\nCreate new configuration file...'
@@ -122,12 +129,112 @@ def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
         config_str += "    switchport mode trunk"  + "\n!\n"
         vlan += handled_ports_count
 
-    # TODO: timestamp for conf file name
     conf_name = "arista.conf"
     with open(conf_name, 'w') as f:
         f.write(config_str)
 
     return conf_name
+
+def reset_device(device,orig_cfg):
+    print "Reset HW device"
+    try:
+        device.load_replace_candidate(filename=orig_cfg)
+        device.commit_config()
+        os.remove(orig_cfg)
+    except Exception as e:
+        print "ERROR: " + str(e)
+        os.remove(orig_cfg)
+        sys.exit(1)
+def load_driver(config):
+
+    try:
+        driver_name = config.get('Hardware device', 'Driver')
+        driver = napalm.get_network_driver(driver_name)
+    except Exception as e:
+        print "ERROR: "+str(e)
+        print "ERROR: Probably napalm does not support the given '" + str(driver_name) + "' driver. Check this website: http://napalm.readthedocs.io/en/latest/support/"
+        sys.exit(1)
+
+    return driver, driver_name
+def delete_vlans(device,driver_name):
+    try:
+        device_config = device.get_config()
+        old_config_name = str(driver_name) + "_" + time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime()) + "_original.cfg"
+        with open(old_config_name, 'w') as f:
+            f.write(device_config['running'])
+        print "Currently running config was saved. Configuration file name: " + old_config_name
+    except Exception as e:
+        print "ERROR: "+str(e)
+        sys.exit(1)
+
+
+    # TODO: create for more driver
+    if driver_name == "junos":
+        temp_cfg_name = delete_vlans_from_juniper(device_config['running'])
+
+    elif driver_name == "eos":
+        temp_cfg_name = delete_vlans_from_arista("old_config_name")
+
+
+    print "Remove already existing vlans..."
+    try:
+        device.load_replace_candidate(filename=temp_cfg_name)
+        device.commit_config()
+        os.remove(temp_cfg_name)
+    except Exception as e:
+        print "ERROR: " + str(e)
+        os.remove(temp_cfg_name)
+        sys.exit(1)
+def upload_new_config(config,driver_name,device,backup_config_name):
+    # Information about vlan and trunk ports
+    vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
+    trunks_if = config.get('Hardware device', 'Used_ports_for_trunk').split(',')
+    vlan_ports_count = len(vlan_if)
+    print "\nUsed vlan ports: " + str(vlan_ports_count)
+    trunk_ports_count = len(trunks_if)
+    print "Used trunk ports: " + str(trunk_ports_count)
+    handled_ports_count = math.ceil(float(vlan_ports_count) / float(trunk_ports_count))
+    print "Number of ports for one trunk: " + str(int(handled_ports_count))
+
+    # Create vlan and trunk interfaces
+    # TODO: create for more driver
+    print "\nCreate new configuration file"
+    if driver_name == "junos":
+        file_name = create_cfgfile_for_juniper(vlan_if, trunks_if, handled_ports_count)
+    elif driver_name == "eos":
+        file_name = create_cfgfile_for_arista(vlan_if, trunks_if, handled_ports_count)
+    print "Trying to commit..."
+    try:
+        device.load_merge_candidate(filename=file_name)
+        device.commit_config()
+    except Exception as e:
+        print "ERROR: " + str(e)
+        os.remove(file_name)
+        reset_device(device, backup_config_name)
+        sys.exit(1)
+    print "Commit was successfull :)"
+    os.remove(file_name)
+
+def connect_to_device(config,driver):
+    if (config.get('Hardware device', 'Port') is not ""):
+
+        device = driver(hostname=config.get('Hardware device', 'Host_IP'),
+                        username=config.get('Hardware device', 'Username'),
+                        password=config.get('Hardware device', 'Password'),
+                        optional_args={'port': config.get('Hardware device', 'Port')})
+    else:
+        device = driver(hostname=config.get('Hardware device', 'Host_IP'),
+                        username=config.get('Hardware device', 'Username'),
+                        password=config.get('Hardware device', 'Password'))
+
+    print 'Connecting to the Hardware Device...'
+    try:
+        device.open()
+    except Exception as e:
+        print "ERROR: " + str(e)
+        sys.exit(1)
+
+    return device
 
 def online_mode():
     """Load a config for the hardware device."""
@@ -163,100 +270,22 @@ def online_mode():
         input_if = raw_input('')
 
 def offline_mode(config):
-    """Load a config for the hardware device."""
-    print '################################################'
-    print "### Configuring Hardware device for HARMLESS ###"
-    print '###########################################################################################################'
+    """ UpLoad a configuration to the hardware device."""
 
-    # Driver:
-    driver_name = config.get('Hardware device', 'Driver')
-    driver = napalm.get_network_driver(driver_name)
+    #Init used driver:
+    driver, driver_name = load_driver(config)
 
-    # Connect:
-    if(config.get('Hardware device', 'Port') is not ""):
+    #Connecting to the device:
+    device = connect_to_device(config,driver)
 
-        device = driver(hostname=config.get('Hardware device', 'Host_IP'), username=config.get('Hardware device', 'Username'),
-                        password=config.get('Hardware device', 'Password'), optional_args={'port': config.get('Hardware device', 'Port')})
-    else:
-        device = driver(hostname=config.get('Hardware device', 'Host_IP'),
-                        username=config.get('Hardware device', 'Username'),
-                        password=config.get('Hardware device', 'Password'))
+    #Deleting existing vlans
+    backup_config_name = delete_vlans(device, driver_name)
 
-    print 'Connecting to the Hardware Device...'
-    device.open()
+    #Creating new configuration
+    upload_new_config(config, driver_name, device, backup_config_name)
 
-
-    # Deleting vlans
-    #TODO:rename running.conf
-    print 'Currently running config was saved. Configuration file name: running.conf'
-    device_config = device.get_config()
-    with open('running.conf', 'w') as f:
-        f.write(device_config['running'])
-
-    # TODO: create for more driver
-    if driver_name == "junos":
-        tmp_vlans_cfg = delete_vlans_from_juniper(device_config['running'])
-        with open('tmp_config.conf', 'w') as f:
-            f.write(tmp_vlans_cfg)
-        lines = open('tmp_config.conf').readlines()
-        temp_cfg_name = 'junos_without_vlan.conf'
-        open(temp_cfg_name, 'w').writelines(lines[3:])
-        os.remove('tmp_config.conf')
-
-    elif driver_name == "eos":
-        temp_cfg_name = delete_vlans_from_arista("running.conf")
-
-
-    print "Remove already existing vlans..."
-    device.load_replace_candidate(filename=temp_cfg_name)
-    device.commit_config()
-    os.remove(temp_cfg_name)
-
-    #Information about vlan and trunk ports
-    vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
-    trunks_if = config.get('Hardware device', 'Used_ports_for_trunk').split(',')
-    vlan_ports_count = len(vlan_if)
-    print "\nUsed vlan ports: "+str(vlan_ports_count)
-    trunk_ports_count = len(trunks_if)
-    print "Used trunk ports: " + str(trunk_ports_count)
-    handled_ports_count = math.ceil(float(vlan_ports_count)/float(trunk_ports_count))
-    print "Number of ports for one trunk: " +str(int(handled_ports_count))
-
-
-    # Create vlan and trunk interfaces
-    #TODO: create for more driver
-    if driver_name == "junos":
-        file_name = create_cfgfile_for_juniper(vlan_if, trunks_if, handled_ports_count)
-    elif driver_name == "eos":
-        file_name = create_cfgfile_for_arista(vlan_if, trunks_if, handled_ports_count)
-    print "Trying to commit..."
-    device.load_merge_candidate(filename=file_name)
-    device.commit_config()
-    print "Commit was successfull :)"
-    os.remove(file_name)
     # close the session with the device.
     device.close()
-
-
-    """
-    # Note that the changes have not been applied yet. Before applying
-    # the configuration you can check the changes:
-    print '\nDiff:'
-    print device.compare_config()
-
-
-    # You can commit or discard the candidate changes.
-    choice = raw_input("\nWould you like to commit these changes? [yN]: ")
-    if choice == 'y':
-      print 'Committing ...'
-      device.commit_config()
-    else:
-      print 'Discarding ...'
-      device.discard_config()
-    """
-
-    #-----------------------------------------------------------------------------------------
-
     print 'Configuring Hardware Device was successfull!'
     print '-----------------------------------------------------------------------------------'
 
@@ -267,19 +296,45 @@ def start_virtual_switches(patch_port_num,trunk_port_num):
 
     #TODO: Create a picture about the connections (wiring)
 
+def main(argv):
 
-if __name__ == '__main__':
+    running_mode = None
+    config_file = None
 
-    if len(sys.argv) < 2:
+    try:
+        opts, args = getopt.getopt(argv,"", ["help", "configuration-file="])
+    except getopt.GetoptError:
+        print "Bad parameter!\nUse 'python harmless_manager.py --help'"
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt == "--help":
+            print "Usage: python harmless_manager.py <params>\nParams:\n\t--configuration-file=<config file>\n\t--online-mode"
+            sys.exit(1)
+        elif opt in ("--configuration-file="):
+            config_file = arg
+        elif opt in ("--online-mode"):
+            running_mode = "online"
+        else:
+            print 'Bad parameters! Use python harmless_manager.py --help'
+            sys.exit(1)
+
+    if running_mode == "online":
         print "Start online mode"
         sys.exit(1)
 
     else:
-        config = ConfigParser.ConfigParser()
-        config.read("configuration_file.ini")
-        patch_port_num = len(config.get('Hardware device', 'Used_ports_for_vlan').split(','))
-        trunk_port_num = len(config.get('Hardware device', 'Used_ports_for_trunk').split(','))
-        #config_file = sys.argv[1]
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read(config_file)
+        except Exception as e:
+            print "ERROR: "+str(e)
+            print "ERROR: Probably the configuration file name '"+config_file+"' is not correct!"
+            sys.exit(1)
+
+        print '################################################'
+        print "### Configuring Hardware device for HARMLESS ###"
+        print '###########################################################################################################'
         offline_mode(config)
         print '###############################################'
         print "### Creating Software switches for HARMLESS ###"
@@ -288,3 +343,7 @@ if __name__ == '__main__':
         print '###########################################################################################################'
         print "###                  Configuring HW Switch and Creating Software switches: Done                         ###"
         print '###########################################################################################################'
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
