@@ -339,6 +339,8 @@ def main(argv):
         print '###############################################'
         print "### Creating Software switches for HARMLESS ###"
         print '###########################################################################################################'
+        patch_port_num = len(config.get('Hardware device', 'Used_ports_for_vlan').split(','))
+        trunk_port_num = len(config.get('Hardware device', 'Used_ports_for_trunk').split(','))
         start_virtual_switches(patch_port_num, trunk_port_num)
         print '###########################################################################################################'
         print "###                  Configuring HW Switch and Creating Software switches: Done                         ###"
