@@ -329,7 +329,7 @@ def main(argv):
             config.read(config_file)
         except Exception as e:
             print "ERROR: "+str(e)
-            print "ERROR: Probably the configuration file name '"+config_file+"' is not correct!"
+            print "ERROR: Probably the configuration file name '" + str(config_file) + "' is not correct! Please use: python harmless_manager.py --help"
             sys.exit(1)
 
         print '################################################'
