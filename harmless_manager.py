@@ -287,7 +287,7 @@ def offline_mode(config):
     # close the session with the device.
     device.close()
     print 'Configuring Hardware Device was successfull!'
-    print '-----------------------------------------------------------------------------------'
+    print '------------------------------------------------------------------------------------------------------------'
 
 def start_virtual_switches(patch_port_num,trunk_port_num):
     print "Stop previously started virtual switch if it's alive"
