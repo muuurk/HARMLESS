@@ -13,6 +13,8 @@ In order to use HARMLESS, you need to the following components:
  	* [Napalm](https://github.com/napalm-automation/napalm) for communicating legacy switches
  	* [OpenvSwitch](http://openvswitch.org/) as virtual SDN switch
 
+![alt text](https://raw.githubusercontent.com/muuurk/harmless/main/harmless.png)
+
 ## How to use HARMLESS
 
 ### Connect the HARMLESS server to the legacy switch
