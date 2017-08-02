@@ -57,19 +57,19 @@ esac
 sudo /sbin/modprobe openvswitch
 
 echo "Delete preconfigured ovs data"
-sudo rm -rf /usr/local/etc/openvswitch/conf.db
+sudo rm -rf /etc/openvswitch/conf.db
 
 echo "Create ovs database structure"
-sudo ovsdb-tool create /usr/local/etc/openvswitch/conf.db     /usr/share/openvswitch/vswitch.ovsschema
+sudo ovsdb-tool create /etc/openvswitch/conf.db     /usr/share/openvswitch/vswitch.ovsschema
 
 echo "Start ovsdb-server..."
-sudo ovsdb-server /usr/local/etc/openvswitch/conf.db --remote=punix:/usr/local/var/run/openvswitch/db.sock     --remote=db:Open_vSwitch,Open_vSwitch,manager_options     --private-key=db:Open_vSwitch,SSL,private_key     --certificate=db:Open_vSwitch,SSL,certificate     --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert     --pidfile --detach --log-file
+sudo ovsdb-server /etc/openvswitch/conf.db --remote=punix:/usr/local/var/run/openvswitch/db.sock     --remote=db:Open_vSwitch,Open_vSwitch,manager_options     --private-key=db:Open_vSwitch,SSL,private_key     --certificate=db:Open_vSwitch,SSL,certificate     --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert     --pidfile --detach --log-file
 
 echo "Initializing"
 sudo ovs-vsctl --no-wait init
 
 echo "exporting environmental variable"
-export DB_SOCK=/usr/local/var/run/openvswitch/db.sock
+export DB_SOCK=/var/run/openvswitch/db.sock
 
 echo "start vswitchd..."
 sudo ovs-vswitchd unix:$DB_SOCK --pidfile --detach --log-file
