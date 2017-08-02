@@ -291,7 +291,7 @@ def offline_mode(config):
 
 def start_virtual_switches(patch_port_num,trunk_port_num):
     print "Create and start virtual switches"
-    subprocess.call("./virtual_switch_starter.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
+    subprocess.call("./virtual_switch_starter_U16.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
     #subprocess.call("./star_virtual_switch.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True)
 
     #TODO: Create a picture about the connections (wiring)
