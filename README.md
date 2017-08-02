@@ -17,7 +17,7 @@ In order to use HARMLESS, you need to the following components:
 
 ## HARMLESS architecture
 
-![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/harmless_architecture.png)
+![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/HARMLESS.jpg)
 
 In our architecture, the legacy switch is configured to tag each packet with a unique VLAN id that identifies the access port it was received from.
 Then, the tagged packets are forwarded to the software switch running on the HARMLESS-enabled-server along the trunk-port–soft-switch interconnect to enforce the network-wide policies according to the OF program set up for the switch by the controller. Each packet goes through the OF pipeline.  Finally, packets are sent back to the legacy switch tagged with the unique VLAN id of the proper outgoing port.
