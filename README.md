@@ -84,7 +84,7 @@ Interfaces_for_trunk= veth1
 #Set trus if using active SDN controller connection mode
 Active_OF_controller = false
 #IP address of the SDN controller
-Contoller_listener_ip = 192.168.140.122
+Contoller_listener_ip = 192.168.41.44
 #Listening TCP port number of the SDN controller
 Contoller_listener_port = 6633
 ```
@@ -92,4 +92,58 @@ Contoller_listener_port = 6633
 Start harmless_manager.py:
 ```bash
 python harmless_manager.py --configuration-file=configuration_file.ini
+```
+The output should be something like this:
+```bash
+################################################
+### Configuring Hardware device for HARMLESS ###
+###########################################################################################################
+Connecting to the Hardware Device...
+Currently running config was saved. Configuration file name: junos_2017-08-02_13:25:09_original.cfg
+Remove already existing vlans...
+
+Used vlan ports: 3
+Used trunk ports: 1
+Number of ports for one trunk: 3
+
+Create new configuration file
+Trying to commit...
+Commit was successfull 🙂
+Configuring Hardware Device was successfull!
+------------------------------------------------------------------------------------------------------------
+###############################################
+### Creating Software switches for HARMLESS ###
+###########################################################################################################
+Stop previously started virtual switch if it is alive
+Killing the whole process tree of OVS
+			[DONE]
+Removing openvswitch module...
+			[DONE]
+Check the following ps aux output:
+
+------------------------------------------------------------------------------------------------------------
+Create and start virtual switches
+Delete preconfigured ovs data
+Create ovs database structure
+Start ovsdb-server...
+2017-08-02T13:25:41Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log
+Initializing
+exporting environmental variable
+start vswitchd...
+2017-08-02T13:25:41Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovs-vswitchd.log
+2017-08-02T13:25:41Z|00002|ovs_numa|INFO|Discovered 2 CPU cores on NUMA node 0
+2017-08-02T13:25:41Z|00003|ovs_numa|INFO|Discovered 1 NUMA nodes and 2 CPU cores
+2017-08-02T13:25:41Z|00004|reconnect|INFO|unix:/var/run/openvswitch/db.sock: connecting...
+2017-08-02T13:25:41Z|00005|reconnect|INFO|unix:/var/run/openvswitch/db.sock: connected
+Create dpdk-bridges (dpdk_br)
+Delete flows from dpdk_br
+Add logical patch ports
+Add physical trunk ports
+Add passive controller listener port on 6633
+Adding forwarding rules to SoftSW_1
+Pin OVS to the right cores (cm: 4) and set up RSS (1
+			 Creating Virtual switches: done 🙂
+###########################################################################################################
+###                  Configuring HW Switch and Creating Software switches: Done                         ###
+###########################################################################################################
 ```
