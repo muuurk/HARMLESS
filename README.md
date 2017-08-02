@@ -11,11 +11,20 @@ In order to use HARMLESS, you need to the following components:
  * virtual switch running on a server (e.g. OVS)
  * software requirements:
  	* [Napalm](https://github.com/napalm-automation/napalm) for communicating legacy switches
- 	* [OpenvSwitch](http://openvswitch.org/) as virtual SDN switch
+ 	* [Open vSwitch](http://openvswitch.org/) as virtual SDN switch
+ 	* Python
+ 	* Pip
 
-![alt text](https://raw.githubusercontent.com/muuurk/harmless/main/harmless.png)
+## HARMLESS architecture
+
+![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/harmless_architecture)
+
+In our architecture, the legacy switch is configured to tag each packet with a unique VLAN id that identifies the access port it was received from.
+Then, the tagged packets are forwarded to the software switch running on the HARMLESS-enabled-server along the trunk-port–soft-switch interconnect to enforce the network-wide policies according to the OF program set up for the switch by the controller. Each packet goes through the OF pipeline.  Finally, packets are sent back to the legacy switch tagged with the unique VLAN id of the proper outgoing port.
 
 ## How to use HARMLESS
+
+
 
 ### Connect the HARMLESS server to the legacy switch
 
@@ -29,14 +38,14 @@ Firstly fill in the configuration_file.ini file.
 In this tutorial we used the components below:
 
 * Juniper EX2200 blade switch as legacy switch
-* Notebook which contains 2 interfaces (for management and trunk links)
+* Notebook with 2 ethernet interfaces (for management and trunk links)
 * Open vSwitch 2.5.2
-* Floodlight
+* Floodlight as SDN controller
 
 
 
 
-First of all run an update on your system:
+First of all update your system:
 ```bash
 sudo apt-get update
 ```
@@ -52,6 +61,10 @@ Napalm install:
 sudo apt install python-pip
 pip install napalm
 ```
+
+Floodlight SDN controller install:
+
+https://floodlight.atlassian.net/wiki/display/floodlightcontroller/Installation+Guide
 
 Clone the harmless git repository:
 ```bash
@@ -83,12 +96,12 @@ DPDK = false
 Cores = 1
 #Server interfaces for trunk connection to the legacy switch
 Interfaces_for_trunk= veth1
-#Set trus if using active SDN controller connection mode
-Active_OF_controller = false
+#Set true if using active SDN controller connection mode
+Active_OF_controller = true
 #IP address of the SDN controller
-Contoller_listener_ip = 192.168.41.44
+Contoller_listener_ip = 192.168.140.122
 #Listening TCP port number of the SDN controller
-Contoller_listener_port = 6633
+Contoller_listener_port = 6653
 ```
 
 Start harmless_manager.py:
@@ -149,3 +162,4 @@ Pin OVS to the right cores (cm: 4) and set up RSS (1
 ###                  Configuring HW Switch and Creating Software switches: Done                         ###
 ###########################################################################################################
 ```
+After these steps the SoftSW_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
