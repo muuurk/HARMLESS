@@ -131,19 +131,22 @@ part_math=`expr $trunk_ports_count - 1`
 part_math2=`expr $patch_ports_count + $part_math`
 for_one_trunk=`expr $part_math2 / $trunk_ports_count`
 
+cur_count=1
 for pp in $(seq 1 $patch_ports_count)
 do
   vlan=$(expr 100 + $pp)
   add_port="sudo ovs-ofctl add-flow ${DBR} dl_vlan=${vlan},actions=strip_vlan,output:${pp}"
   $add_port
 
-  next_if=`expr $patch_ports_count % $for_one_trunk`
+  next_if=`expr $cur_count % $for_one_trunk`
   add_port2="sudo ovs-ofctl add-flow ${DBR} in_port=${pp},actions=mod_vlan_vid:${vlan},output:${phy_if_out}"
 
   if [ "$next_if" == 0 ]
   then
     phy_if_out=`expr $phy_if_out + 1`
+    cur_count=0
   fi
+  cur_count=`expr $cur_count + 1`
   $add_port2
 done
 
