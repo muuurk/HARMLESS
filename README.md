@@ -38,7 +38,7 @@ In order to use HARMLESS, you need the following components:
 ```bash
 python harmless_manager.py --configuration-file=configuration_file.ini
 ```
-4. If everything worked you can connect an SDN controller to the SS_2 software switch
+4. If everything was successfull you can connect an SDN controller to the SS_2 software switch
 
 
 ## Tutorial: HARMLESS with OVS
