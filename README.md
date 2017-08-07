@@ -169,14 +169,14 @@ Delete flows from dpdk_br
 Add logical patch ports
 Add physical trunk ports
 Add passive controller listener port on 6633
-Adding forwarding rules to SoftSW_1
+Adding forwarding rules to SS_1
 Pin OVS to the right cores (cm: 4) and set up RSS (1
 			 Creating Virtual switches: done 🙂
 ###########################################################################################################
 ###                  Configuring HW Switch and Creating Software switches: Done                         ###
 ###########################################################################################################
 ```
-After these steps the SoftSW_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
+After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
 
 ## Contacts
 
