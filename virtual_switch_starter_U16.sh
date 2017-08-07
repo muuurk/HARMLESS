@@ -1,6 +1,6 @@
 #!/bin/bash
-DBR="SoftSW_1"
-DBR2="SoftSW_2"
+DBR="SS_1"
+DBR2="SS_2"
 
 function print_help
 {
