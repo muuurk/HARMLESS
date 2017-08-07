@@ -46,7 +46,7 @@ python harmless_manager.py --configuration-file=configuration_file.ini
 In this tutorial we used the components below:
 
 * Juniper EX2200 blade switch as legacy switch
-* Acer Notebook with 2 ethernet interfaces (for management and trunk links)
+* Acer Notebook with 2 ethernet interfaces (for management and trunk links) as HARMLESS enabled server
 * Open vSwitch 2.5.2
 * Floodlight as SDN controller
 
