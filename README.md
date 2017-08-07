@@ -12,15 +12,17 @@ During operation the legacy switch is configured to tag each packet with a uniqu
 Then, the tagged packets are forwarded to the software switch SS_1 running on the HARMLESS-enabled-server along the trunk-port–soft-switch interconnect.
 The SS_1 switch maps output ports to VLAN ids and vice versa. Since the SS_1 is connected to the SS_2 by as many patch ports as the number of managed access ports, therefore the packets are forwarded to the main OpenFlow switch (SS_2). The SS_2 is connected to the SDN controller which set up the OF pipeline. The packets go through it and finally they are sent back to the legacy switch tagged with the unique VLAN id of the proper outgoing port.
 
+#### Example use-case:
 
 As an example, consider the case of Host 1 and Host 2 (connected to access ports 1 and 2 identified by VLAN id 101, and 102) permitted to exchange traffic only with each other. When Host 1 sends a packet to Host 2, this is tagged with VLAN id 101 and forwarded to SS_1 via the trunk port. According to its flow table, SS_1 outputs the packet to patch port 1, through which the main OpenFlow switch (SS_2), managed directly by the SDN controller, receives it and processes it according to the OpenFlow pipeline. Based on the policy, SS 2 passes the packet back to SS 1 via patch port 2. SS 1 subsequently tags the packet with VLAN id 102 and immediately passes it towards the legacy switch which in turn removes the VLAN tag and sends the packet to Host 2 (see green dashed arrow).
 
 ## Requirements
 
-In order to use HARMLESS, you need to the following components:
+In order to use HARMLESS, you need the following components:
 
  * legacy switch
- * virtual switch running on a server (e.g. OVS)
+ * server at least with 2 interface (for management and tunnel links)
+ * virtual switch running on the server (e.g. OVS)
  * software requirements:
  	* [Napalm](https://github.com/napalm-automation/napalm) for communicating legacy switches
  	* [Open vSwitch](http://openvswitch.org/) as virtual SDN switch
@@ -29,13 +31,14 @@ In order to use HARMLESS, you need to the following components:
 
 ## How to use HARMLESS
 
-
-
-### Connect the HARMLESS server to the legacy switch
-
-### Start HARMLESS
-
-Firstly fill in the configuration_file.ini file.
+1. Connect the HARMLESS server to the management port of the legacy switch
+2. Fill the configuration_file.ini
+	* Example configuration file is below!
+3. Start harmless_manager.py
+```bash
+python harmless_manager.py --configuration-file=configuration_file.ini
+```
+4. If everything worked you can connect an SDN controller to the SS_2 software switch
 
 
 ## Tutorial: HARMLESS with OVS
@@ -168,3 +171,7 @@ Pin OVS to the right cores (cm: 4) and set up RSS (1
 ###########################################################################################################
 ```
 After these steps the SoftSW_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
+
+## Contacts
+
+Mark Szalay - mark.szalay@tmit.bme.hu
