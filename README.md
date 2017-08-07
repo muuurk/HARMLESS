@@ -3,7 +3,7 @@
 Recently, Software-Defined Networking has grown out of being an “intriguing approach” and turned into a “must-have” for communication networks to overcome many long-standing problems of traditional networking. However, there are still some obstacles on the way to the widespread adoption. Current commodity-off-the-shelf (COTS) SDN offerings are still in their infancy and are notorious for lacking standards compliance, scalability, and unpredictable performance indicators compared to their legacy counterparts. On the other hand, recent software-based solutions might mitigate these shortcomings, but in terms of cost-efficiency and port density they are in a lower league.
 HARMLESS is a novel SDN switch design that combines the rapid innovation and upgrade cycles of software switches with the port density of hardware-based appliances into a fully data plane-transparent, vendor-neutral and cost-effective solution for smaller enterprises to gain a foothold in this era. Using HARMLESS you can transform your dumb legacy Ethernet switch to a powerful, fully reconfigurable, OpenFlow-enabled network device without incurring any major performance and latency penalty, nor any substantial price tag enabling to realize many use cases that would have otherwise needed standalone hardware appliances.
 
-Video showcase is available at https://goo.gl/ssw5Bb.
+Video showcase is available at https://www.youtube.com/watch?v=XMxJzDcq6Hw&t
 
 ## HARMLESS architecture
 
