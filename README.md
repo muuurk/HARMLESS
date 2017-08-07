@@ -177,5 +177,5 @@ After these steps the SoftSW_2 virtual bridge had connected to the floodlight co
 
 ## Contacts
 
-Mark Szalay - mark.szalay@tmit.bme.hu
+Mark Szalay - mark.szalay@tmit.bme.hu, 
 Levente Csikor - csikor@tmit.bme.hu
