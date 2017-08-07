@@ -50,6 +50,8 @@ In this tutorial we used the components below:
 * Open vSwitch 2.5.2
 * Floodlight as SDN controller
 
+![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/tutorial.pdf)
+
 We used Ubuntu 16.04.3 LTS on the notebook and 11.4R7.5 junos on the Juniper EX2200.
 
 Prepare the switch to use HARMLESS:
