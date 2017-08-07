@@ -1,7 +1,19 @@
 # HARMLESS
 
 Recently, Software-Defined Networking has grown out of being an “intriguing approach” and turned into a “must-have” for communication networks to overcome many long-standing problems of traditional networking. However, there are still some obstacles on the way to the widespread adoption. Current commodity-off-the-shelf (COTS) SDN offerings are still in their infancy and are notorious for lacking standards compliance, scalability, and unpredictable performance indicators compared to their legacy counterparts. On the other hand, recent software-based solutions might mitigate these shortcomings, but in terms of cost-efficiency and port density they are in a lower league.
-Here, we present HARMLESS, a novel SDN switch design that combines the rapid innovation and upgrade cycles of software switches with the port density of hardware-based appliances into a fully data plane-transparent, vendor-neutral and cost-effective solution for smaller enterprises to gain a foothold in this era. The demo showcases the SDN migration of a dumb legacy Ethernet switch to a powerful, fully recongurable, OpenFlow-enabled network device without incurring any major performance and latency penalty, nor any substantial price tag enabling to realize many use cases that would have otherwise needed standalone hardware appliances.
+HARMLESS is a novel SDN switch design that combines the rapid innovation and upgrade cycles of software switches with the port density of hardware-based appliances into a fully data plane-transparent, vendor-neutral and cost-effective solution for smaller enterprises to gain a foothold in this era. Using HARMLESS you can transform your dumb legacy Ethernet switch to a powerful, fully reconfigurable, OpenFlow-enabled network device without incurring any major performance and latency penalty, nor any substantial price tag enabling to realize many use cases that would have otherwise needed standalone hardware appliances.
+
+## HARMLESS architecture
+
+![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/HARMLESS.jpg)
+
+There are three main components of HARMLESS architecture: Legacy switch, SS_1 (Software Switch 1) and SS_2 on the HARMLESS enabled server.
+During operation the legacy switch is configured to tag each packet with a unique VLAN id that identifies the access port it was received from.
+Then, the tagged packets are forwarded to the software switch SS_1 running on the HARMLESS-enabled-server along the trunk-port–soft-switch interconnect.
+The SS_1 switch maps output ports to VLAN ids and vice versa. Since the SS_1 is connected to the SS_2 by as many patch ports as the number of managed access ports, therefore the packets are forwarded to the main OpenFlow switch (SS_2). The SS_2 is connected to the SDN controller which set up the OF pipeline. The packets go through it and finally they are sent back to the legacy switch tagged with the unique VLAN id of the proper outgoing port.
+
+
+As an example, consider the case of Host 1 and Host 2 (connected to access ports 1 and 2 identified by VLAN id 101, and 102) permitted to exchange traffic only with each other. When Host 1 sends a packet to Host 2, this is tagged with VLAN id 101 and forwarded to SS_1 via the trunk port. According to its flow table, SS_1 outputs the packet to patch port 1, through which the main OpenFlow switch (SS_2), managed directly by the SDN controller, receives it and processes it according to the OpenFlow pipeline. Based on the policy, SS 2 passes the packet back to SS 1 via patch port 2. SS 1 subsequently tags the packet with VLAN id 102 and immediately passes it towards the legacy switch which in turn removes the VLAN tag and sends the packet to Host 2 (see green dashed arrow).
 
 ## Requirements
 
@@ -14,13 +26,6 @@ In order to use HARMLESS, you need to the following components:
  	* [Open vSwitch](http://openvswitch.org/) as virtual SDN switch
  	* Python
  	* Pip
-
-## HARMLESS architecture
-
-![alt text](https://raw.githubusercontent.com/muuurk/harmless/master/HARMLESS.jpg)
-
-In our architecture, the legacy switch is configured to tag each packet with a unique VLAN id that identifies the access port it was received from.
-Then, the tagged packets are forwarded to the software switch running on the HARMLESS-enabled-server along the trunk-port–soft-switch interconnect to enforce the network-wide policies according to the OF program set up for the switch by the controller. Each packet goes through the OF pipeline.  Finally, packets are sent back to the legacy switch tagged with the unique VLAN id of the proper outgoing port.
 
 ## How to use HARMLESS
 
