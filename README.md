@@ -46,11 +46,14 @@ python harmless_manager.py --configuration-file=configuration_file.ini
 In this tutorial we used the components below:
 
 * Juniper EX2200 blade switch as legacy switch
-* Notebook with 2 ethernet interfaces (for management and trunk links)
+* Acer Notebook with 2 ethernet interfaces (for management and trunk links)
 * Open vSwitch 2.5.2
 * Floodlight as SDN controller
 
+We used Ubuntu 16.04.3 LTS on the notebook and 11.4R7.5 junos on the Juniper EX2200.
 
+Prepare the switch to use HARMLESS:
+Connect it to the Notebook through the management port.
 
 
 First of all update your system:
@@ -175,3 +178,4 @@ After these steps the SoftSW_2 virtual bridge had connected to the floodlight co
 ## Contacts
 
 Mark Szalay - mark.szalay@tmit.bme.hu
+Levente Csikor - csikor@tmit.bme.hu
