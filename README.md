@@ -53,14 +53,12 @@ In this tutorial we used the components below:
 We used Ubuntu 16.04.3 LTS on the notebook and 11.4R7.5 junos on the Juniper EX2200.
 
 Prepare the switch to use HARMLESS:
-Connect it to the Notebook through the management port.
-
+* Connect it to the Notebook through the management port of the Juniper.
 
 First of all update your system:
 ```bash
 sudo apt-get update
 ```
-
 
 You will need to install [OVS](http://openvswitch.org/):
 ```bash
@@ -86,6 +84,7 @@ Fill in the configuration_file.ini:
 ```bash
 [Hardware device]
 #Driver of the device. e.g. Juniper - junos, Arista - eos
+#Currently supported drivers: junos, eos.
 Driver = junos
 #Management IP address of the legacy switch
 Host_IP = 10.2.1.6
