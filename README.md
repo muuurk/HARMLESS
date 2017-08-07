@@ -97,7 +97,7 @@ Port =
 #Device interfaces as SDN interfaces
 Used_ports_for_vlan=ge-0/0/0,ge-0/0/1
 #Device interfaces for trunk links between the legacy and the virtual switch
-Used_ports_for_trunk=ge-0/0/2
+Used_ports_for_trunk=ge-0/0/23
 
 [HARMLESS]
 #Set true if using OVS with dpdk
@@ -105,7 +105,7 @@ DPDK = false
 #CPU core number
 Cores = 1
 #Server interfaces for trunk connection to the legacy switch
-Interfaces_for_trunk= veth1
+Interfaces_for_trunk= enp3s0
 #Set true if using active SDN controller connection mode
 Active_OF_controller = true
 #IP address of the SDN controller
