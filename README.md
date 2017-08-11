@@ -178,6 +178,30 @@ Pin OVS to the right cores (cm: 4) and set up RSS (1
 ```
 After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
 
+## Tutorial: HARMLESS with OVS-DPDK
+
+This tutorial is similiar then the previos above, but here we use DPDK enabled OVS instead of the simple kernel version.
+
+You will need to install a DPDK enabled OVS. Find the details of the installation from the link: http://docs.openvswitch.org/en/latest/intro/install/dpdk/ or follow the instructions below.
+
+Firstly, install DPDK:
+
+cd /usr/src/
+wget http://fast.dpdk.org/rel/dpdk-17.05.1.tar.xz
+tar xf dpdk-17.05.1.tar.xz
+export DPDK_DIR=/usr/src/dpdk-stable-17.05.1
+cd $DPDK_DIR
+
+export DPDK_TARGET=x86_64-native-linuxapp-gcc
+export DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
+make install T=$DPDK_TARGET DESTDIR=install
+
+Install OVS:
+git clone https://github.com/openvswitch/ovs.git
+cd ovs
+git checkout v2.7.0
+
+
 ## Contacts
 
 Mark Szalay - mark.szalay@tmit.bme.hu, 
