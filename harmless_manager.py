@@ -138,11 +138,12 @@ def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
     return conf_name
 
 def reset_device(device,orig_cfg):
-    print "Reset HW device"
+    print "Reset HW device to " +orig_cfg + "state"
     try:
         device.load_replace_candidate(filename=orig_cfg)
         device.commit_config()
         os.remove(orig_cfg)
+        print "Reset: DONE"
     except Exception as e:
         print "ERROR: " + str(e)
         os.remove(orig_cfg)
@@ -287,6 +288,8 @@ def backup_mode(new_cfg, config):
     reset_device(device, new_cfg)
 
     device.close()
+    print 'Reset Hardware Device to earlier state was successfull!'
+    print '------------------------------------------------------------------------------------------------------------'
 
 def offline_mode(config):
     """ UpLoad the HARMLESS configuration to the hardware device."""
