@@ -60,6 +60,7 @@ def delete_vlans_from_juniper(conf_str):
     os.remove('tmp_config.conf')
 
     return "junos_without_vlan.conf"
+
 def delete_vlans_from_arista(running_config):
 
     new_lines = []
@@ -110,6 +111,7 @@ def create_cfgfile_for_juniper(vlan_if, trunks_if,handled_ports_count):
         f.write(configuration)
 
     return "junos_with_vlan.cfg"
+
 def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
 
     print '\nCreate new configuration file...'
@@ -145,6 +147,7 @@ def reset_device(device,orig_cfg):
         print "ERROR: " + str(e)
         os.remove(orig_cfg)
         sys.exit(1)
+
 def load_driver(config):
 
     try:
@@ -156,6 +159,7 @@ def load_driver(config):
         sys.exit(1)
 
     return driver, driver_name
+
 def delete_vlans(device,driver_name):
     try:
         device_config = device.get_config()
@@ -185,6 +189,7 @@ def delete_vlans(device,driver_name):
         print "ERROR: " + str(e)
         os.remove(temp_cfg_name)
         sys.exit(1)
+
 def upload_new_config(config,driver_name,device,backup_config_name):
     # Information about vlan and trunk ports
     vlan_if = config.get('Hardware device', 'Used_ports_for_vlan').split(',')
@@ -269,8 +274,22 @@ def online_mode():
         vlan_if.append(input_if)
         input_if = raw_input('')
 
+def backup_mode(new_cfg, config):
+    """ UpLoad a backup configuration to the hardware device."""
+
+    #Init used driver:
+    driver, driver_name = load_driver(config)
+
+    #Connecting to the device:
+    device = connect_to_device(config,driver)
+
+    #Reset device with an older cfg
+    reset_device(device, new_cfg)
+
+    device.close()
+
 def offline_mode(config):
-    """ UpLoad a configuration to the hardware device."""
+    """ UpLoad the HARMLESS configuration to the hardware device."""
 
     #Init used driver:
     driver, driver_name = load_driver(config)
@@ -281,7 +300,7 @@ def offline_mode(config):
     #Deleting existing vlans
     backup_config_name = delete_vlans(device, driver_name)
 
-    #Creating new configuration
+    #Creating and uploading new configuration
     upload_new_config(config, driver_name, device, backup_config_name)
 
     # close the session with the device.
@@ -306,35 +325,43 @@ def main(argv):
     config_file = None
 
     try:
-        opts, args = getopt.getopt(argv,"", ["help", "configuration-file="])
+        opts, args = getopt.getopt(argv,"", ["help", "configuration-file=","upload-cfg="])
     except getopt.GetoptError:
         print "Bad parameter!\nUse 'python harmless_manager.py --help'"
         sys.exit(1)
 
     for opt, arg in opts:
         if opt == "--help":
-            print "Usage: python harmless_manager.py <params>\nParams:\n\t--configuration-file=<config file>\n\t--online-mode"
+            print "Usage: python harmless_manager.py <params>\nParams:\n\t--configuration-file=<config file>\n\t--upload-cfg"
             sys.exit(1)
         elif opt in ("--configuration-file="):
             config_file = arg
+        elif opt in ("--upload-cfg="):
+            new_cfg = arg
+            running_mode = "backup_device"
         elif opt in ("--online-mode"):
             running_mode = "online"
         else:
             print 'Bad parameters! Use python harmless_manager.py --help'
             sys.exit(1)
 
-    if running_mode == "online":
-        print "Start online mode"
+    try:
+        config = ConfigParser.ConfigParser()
+        config.read(config_file)
+    except Exception as e:
+        print "ERROR: " + str(e)
+        print "ERROR: Probably the configuration file name '" + str(
+            config_file) + "' is not correct! Please use: python harmless_manager.py --help"
         sys.exit(1)
 
+    if running_mode == "online":
+        print "Online mode currently is not implemented yet."
+        sys.exit(1)
+
+    elif running_mode == "backup_device":
+        backup_mode(new_cfg, config)
+
     else:
-        try:
-            config = ConfigParser.ConfigParser()
-            config.read(config_file)
-        except Exception as e:
-            print "ERROR: "+str(e)
-            print "ERROR: Probably the configuration file name '" + str(config_file) + "' is not correct! Please use: python harmless_manager.py --help"
-            sys.exit(1)
 
         print '################################################'
         print "### Configuring Hardware device for HARMLESS ###"
