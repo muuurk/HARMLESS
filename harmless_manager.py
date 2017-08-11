@@ -138,12 +138,12 @@ def create_cfgfile_for_arista(vlans_if, trunks_if,handled_ports_count):
     return conf_name
 
 def reset_device(device,orig_cfg):
-    print "Reset HW device to " +orig_cfg + "state"
+    print "Reset HW device to " +orig_cfg + " state"
     try:
         device.load_replace_candidate(filename=orig_cfg)
         device.commit_config()
         os.remove(orig_cfg)
-        print "Reset: DONE"
+        print "DONE"
     except Exception as e:
         print "ERROR: " + str(e)
         os.remove(orig_cfg)
