@@ -199,7 +199,7 @@ sudo make install T=$DPDK_TARGET DESTDIR=install
 ```
 
 
-Install OVS:
+Install OVS with DPDK:
 ```bash
 git clone https://github.com/openvswitch/ovs.git
 cd ovs
