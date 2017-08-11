@@ -186,15 +186,18 @@ You will need to install a DPDK enabled OVS. Find the details of the installatio
 
 Firstly, install DPDK:
 
+```bash
 cd /usr/src/
-wget http://fast.dpdk.org/rel/dpdk-17.05.1.tar.xz
-tar xf dpdk-17.05.1.tar.xz
+sudo wget http://fast.dpdk.org/rel/dpdk-17.05.1.tar.xz
+sudo tar xf dpdk-17.05.1.tar.xz
 export DPDK_DIR=/usr/src/dpdk-stable-17.05.1
 cd $DPDK_DIR
 
 export DPDK_TARGET=x86_64-native-linuxapp-gcc
 export DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
-make install T=$DPDK_TARGET DESTDIR=install
+sudo make install T=$DPDK_TARGET DESTDIR=install
+```
+
 
 Install OVS:
 git clone https://github.com/openvswitch/ovs.git
