@@ -200,9 +200,17 @@ sudo make install T=$DPDK_TARGET DESTDIR=install
 
 
 Install OVS:
+```bash
 git clone https://github.com/openvswitch/ovs.git
 cd ovs
-git checkout v2.7.0
+
+sudo apt-get install libtool
+./boot.sh
+./configure --with-dpdk=$DPDK_BUILD
+make
+
+```
+
 
 
 ## Contacts
