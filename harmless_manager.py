@@ -332,7 +332,7 @@ def main(argv):
 
     for opt, arg in opts:
         if opt == "--help":
-            print "Usage: python harmless_manager.py <params>\nParams:\n\t--configuration-file=<config file>\n\t--upload-cfg"
+            print "Usage: python harmless_manager.py <params>\nParams:\n\t--configuration-file=<config file>\n\t--upload-cfg=<config_file>"
             sys.exit(1)
         elif opt in ("--configuration-file="):
             config_file = arg
