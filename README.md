@@ -185,6 +185,8 @@ This tutorial is similiar then the previos above, but here we use DPDK enabled O
 
 You will need to install a DPDK enabled OVS. Find the details of the installation from the link: http://docs.openvswitch.org/en/latest/intro/install/dpdk/ or follow the instructions below.
 
+We used Open vSwitch 2.8.90.
+
 Firstly, install DPDK:
 
 ```bash
@@ -209,9 +211,11 @@ sudo apt-get install libtool
 ./boot.sh
 ./configure --with-dpdk=$DPDK_BUILD
 make
-
+sudo make install
 ```
+Setup hugepages on your system. Follow the instructions in the 'Setup Hugepages' chapter:
 
+http://docs.openvswitch.org/en/latest/intro/install/dpdk/
 
 
 ## Contacts
