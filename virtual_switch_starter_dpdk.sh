@@ -1,5 +1,4 @@
 #!/bin/bash
-OVS_PATH="/home/user/ovs"
 DBR="SS_1"
 DBR2="SS_2"
 
@@ -17,6 +16,7 @@ ptcp_port=16633
 
 #Read from configuration file
 config_file="configuration_file.ini"
+OVS_PATH=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep OVS_PATH | cut -f2 -d'"'`
 num_cores=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Host_IP | cut -f2 -d'"'`
 trunk_lspci_addresses=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep LSPCI_address_of_Interfaces_for_trunk | cut -f2 -d'"'`
 listening_port=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Contoller_listener_port | cut -f2 -d'"'`
@@ -161,7 +161,7 @@ echo "Pin OVS to the right cores (cm: ${c}) and set up RSS (${r}"
 #sudo $OVS_PATH/utilities/ovs-vsctl set interface dpdk1 options:n_rxq=$r other_config:pmd-rxq-affinity=$pinning
 sudo $OVS_PATH/utilities/ovs-vsctl set Open_vSwitch . other_config:n-dpdk-rxqs=$r
 
-echo "This is the pinning:"
-sudo $OVS_PATH/utilities/ovs-appctl dpif-netdev/pmd-rxq-show
+#echo "This is the pinning:"
+#sudo $OVS_PATH/utilities/ovs-appctl dpif-netdev/pmd-rxq-show
 
 echo -e "\t\t\t Creating DPDK Virtual switches: done :)"
