@@ -74,11 +74,11 @@ export DB_SOCK=/var/run/openvswitch/db.sock
 echo "start vswitchd..."
 sudo ovs-vswitchd unix:$DB_SOCK --pidfile --detach --log-file
 
-echo "Create dpdk-bridges (dpdk_br)"
+echo "Create software-bridges"
 sudo ovs-vsctl add-br $DBR -- set bridge $DBR datapath_type=netdev
 sudo ovs-vsctl add-br $DBR2 -- set bridge $DBR2 datapath_type=netdev
 
-echo "Delete flows from dpdk_br"
+echo "Delete original flows from software switches"
 sudo ovs-ofctl del-flows $DBR
 sudo ovs-ofctl del-flows $DBR2
 
