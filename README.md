@@ -211,12 +211,32 @@ sudo apt-get install libtool
 ./boot.sh
 ./configure --with-dpdk=$DPDK_BUILD
 make
-sudo make install
 ```
 Setup hugepages on your system. Follow the instructions in the 'Setup Hugepages' chapter:
 
 http://docs.openvswitch.org/en/latest/intro/install/dpdk/
 
+Setup trunk interfaces to use DPDK. See details:
+
+http://dpdk.org/doc/guides/tools/devbind.html
+
+Fill the configuration_file.ini correctly. 
+```bash
+#Set true if using OVS with dpdk
+DPDK = true
+
+#If you use OVS with DPDK, fill lspci IDs of interfaces for trunk connection to the legacy switch
+LSPCI_address_of_Interfaces_for_trunk =
+
+#In case of OVS with DPDK, define here the path of the OVS
+OVS_PATH=/home/user/ovs
+
+```
+
+Start harmless_manager.py:
+```bash
+python harmless_manager.py --configuration-file=configuration_file.ini
+```
 
 ## Contacts
 
