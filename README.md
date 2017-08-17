@@ -214,7 +214,7 @@ make
 ```
 Setup hugepages on your system. Follow the instructions in the 'Setup Hugepages' chapter:
 
-http://docs.openvswitch.org/en/latest/intro/install/dpdk/
+http://docs.openvswitch.org/en/latest/intro/install/dpdk/#setup
 
 Setup trunk interfaces to use DPDK. See details:
 
