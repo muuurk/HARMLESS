@@ -18,7 +18,7 @@ ptcp_port=16633
 #Read from configuration file
 config_file="configuration_file.ini"
 num_cores=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Host_IP | cut -f2 -d'"'`
-trunk_lspci_addresses=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Interfaces_for_trunk | cut -f2 -d'"'`
+trunk_lspci_addresses=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep LSPCI_address_of_Interfaces_for_trunk | cut -f2 -d'"'`
 listening_port=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Contoller_listener_port | cut -f2 -d'"'`
 listening_ip=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Contoller_listener_ip | cut -f2 -d'"'`
 is_active=`awk -F ' *= *' '{ if ($1 ~ /^\[/) section=$1; else if ($1 !~ /^$/) print $1 section "=" "\"" $2 "\"" }' $config_file | grep Active_OF_controller | cut -f2 -d'"'`

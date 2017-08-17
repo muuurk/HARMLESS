@@ -311,13 +311,18 @@ def offline_mode(config):
     print 'Configuring Hardware Device was successfull!'
     print '------------------------------------------------------------------------------------------------------------'
 
-def start_virtual_switches(patch_port_num,trunk_port_num):
+def start_virtual_switches(patch_port_num,trunk_port_num, dpdk):
     print "Stop previously started virtual switch if it's alive"
     subprocess.call("./stop_ovs.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True,stderr=False)
     print '------------------------------------------------------------------------------------------------------------'
     
     print "Create and start virtual switches"
-    subprocess.call("./virtual_switch_starter_U16.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
+    
+    dpdk=dpdk.lower()
+    if dpdk == "false": 
+		subprocess.call("./virtual_switch_starter_U16.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
+    else:
+        subprocess.call("./virtual_switch_starter_dpdk.sh " + str(patch_port_num) + " " + str(trunk_port_num),shell=True,stderr=False)
     #subprocess.call("./star_virtual_switch.sh " + str(patch_port_num) + " " + str(trunk_port_num), shell=True)
 
     #TODO: Create a picture about the connections (wiring)
@@ -358,7 +363,7 @@ def main(argv):
         sys.exit(1)
 
     if running_mode == "online":
-        print "Online mode currently is not implemented yet."
+        print "Online mode is not implemented yet."
         sys.exit(1)
 
     elif running_mode == "backup_device":
@@ -375,7 +380,7 @@ def main(argv):
         print '###########################################################################################################'
         patch_port_num = len(config.get('Hardware device', 'Used_ports_for_vlan').split(','))
         trunk_port_num = len(config.get('Hardware device', 'Used_ports_for_trunk').split(','))
-        start_virtual_switches(patch_port_num, trunk_port_num)
+        start_virtual_switches(patch_port_num, trunk_port_num,config.get('HARMLESS', 'DPDK'))
         print '###########################################################################################################'
         print "###                  Configuring HW Switch and Creating Software switches: Done                         ###"
         print '###########################################################################################################'
