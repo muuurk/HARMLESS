@@ -176,7 +176,8 @@ Pin OVS to the right cores (cm: 4) and set up RSS (1
 ###                  Configuring HW Switch and Creating Software switches: Done                         ###
 ###########################################################################################################
 ```
-After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
+After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the web interface of the Floodlight:
+http://127.0.0.1:8080/ui/pages/index.html
 
 ## Tutorial: HARMLESS with OVS-DPDK
 
