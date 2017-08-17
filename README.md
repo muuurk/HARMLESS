@@ -176,13 +176,16 @@ Pin OVS to the right cores (cm: 4) and set up RSS (1
 ###                  Configuring HW Switch and Creating Software switches: Done                         ###
 ###########################################################################################################
 ```
-After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the GUI of the Floodlight. 
+After these steps the SS_2 virtual bridge had connected to the floodlight controller. You can check this on the web interface of the Floodlight:
+http://127.0.0.1:8080/ui/pages/index.html
 
 ## Tutorial: HARMLESS with OVS-DPDK
 
 This tutorial is similiar then the previos above, but here we use DPDK enabled OVS instead of the simple kernel version.
 
 You will need to install a DPDK enabled OVS. Find the details of the installation from the link: http://docs.openvswitch.org/en/latest/intro/install/dpdk/ or follow the instructions below.
+
+We used Open vSwitch 2.8.90.
 
 Firstly, install DPDK:
 
@@ -208,9 +211,11 @@ sudo apt-get install libtool
 ./boot.sh
 ./configure --with-dpdk=$DPDK_BUILD
 make
-
+sudo make install
 ```
+Setup hugepages on your system. Follow the instructions in the 'Setup Hugepages' chapter:
 
+http://docs.openvswitch.org/en/latest/intro/install/dpdk/
 
 
 ## Contacts
